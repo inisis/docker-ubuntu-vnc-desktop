@@ -1,14 +1,13 @@
-# Built with arch: amd64 flavor: lxqt image: ubuntu:18.04 localbuild: tw
+# Built with arch: amd64 flavor: lxqt image: ubuntu:18.04 localbuild: cn
 #
 ################################################################################
 # base system
 ################################################################################
 
-FROM ubuntu:18.04 as system
+# FROM ubuntu:18.04 as system
+FROM nvidia/cuda:10.1-devel-ubuntu18.04 as system
 
-
-
-RUN sed -i 's#http://archive.ubuntu.com/ubuntu/#mirror://mirrors.ubuntu.com/mirrors.txt#' /etc/apt/sources.list;
+# RUN sed -i 's#http://archive.ubuntu.com/ubuntu/#mirror://mirrors.ubuntu.com/mirrors.txt#' /etc/apt/sources.list;
 
 
 # built-in packages
@@ -63,7 +62,7 @@ COPY rootfs/usr/local/lib/web/backend/requirements.txt /tmp/
 RUN apt-get update \
     && dpkg-query -W -f='${Package}\n' > /tmp/a.txt \
     && apt-get install -y python-pip python-dev build-essential \
-	&& pip install setuptools wheel && pip install -r /tmp/requirements.txt \
+	&& pip install setuptools wheel -i https://mirrors.aliyun.com/pypi/simple/ && pip install -r /tmp/requirements.txt -i https://mirrors.aliyun.com/pypi/simple/ \
     && dpkg-query -W -f='${Package}\n' > /tmp/b.txt \
     && apt-get remove -y `diff --changed-group-format='%>' --unchanged-group-format='' /tmp/a.txt /tmp/b.txt | xargs` \
     && apt-get autoclean -y \
@@ -78,7 +77,7 @@ RUN apt-get update \
 FROM ubuntu:18.04 as builder
 
 
-RUN sed -i 's#http://archive.ubuntu.com/ubuntu/#mirror://mirrors.ubuntu.com/mirrors.txt#' /etc/apt/sources.list;
+# RUN sed -i 's#http://archive.ubuntu.com/ubuntu/#mirror://mirrors.ubuntu.com/mirrors.txt#' /etc/apt/sources.list;
 
 
 RUN apt-get update \
@@ -97,6 +96,8 @@ RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
 # build frontend
 COPY web /src/web
 RUN cd /src/web \
+    && npm install chromedriver --chromedriver_cdnurl=http://cdn.npm.taobao.org/dist/chromedriver \
+    && mv /src/web/node_modules/chromedriver/lib/chromedriver/chromedriver /src/web/node_modules/chromedriver \
     && yarn \
     && yarn build
 RUN sed -i 's#app/locale/#novnc/app/locale/#' /src/web/dist/static/novnc/app/ui.js
@@ -113,6 +114,8 @@ COPY --from=builder /src/web/dist/ /usr/local/lib/web/frontend/
 COPY rootfs /
 RUN ln -sf /usr/local/lib/web/frontend/static/websockify /usr/local/lib/web/frontend/static/novnc/utils/websockify && \
 	chmod +x /usr/local/lib/web/frontend/static/websockify/run
+
+RUN apt-get update && apt-get install -y python3-pip git vim 
 
 EXPOSE 80
 WORKDIR /root
