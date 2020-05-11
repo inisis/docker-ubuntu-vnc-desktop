@@ -13,7 +13,7 @@ FROM arm32v7/{{image}} as system
 COPY --from=amd64 /usr/bin/qemu-arm-static /usr/bin/
 {%endif%}
 
-RUN sed -i 's#http://archive.ubuntu.com/ubuntu/#mirror://mirrors.ubuntu.com/mirrors.txt#' /etc/apt/sources.list;
+# RUN sed -i 's#http://archive.ubuntu.com/ubuntu/#mirror://mirrors.ubuntu.com/mirrors.txt#' /etc/apt/sources.list;
 
 # built-in packages
 ENV DEBIAN_FRONTEND noninteractive
@@ -30,7 +30,7 @@ RUN apt update \
 {%if image == "ubuntu:18.04"%}
 ENV X11VNC_VERSION=0.9.16-1
 {%else%}
-ENV X11VNC_VERSION=0.9.14-1*
+ENV X11VNC_VERSION=0.9.16-1
 # arc-theme
 RUN add-apt-repository -y ppa:noobslab/themes
 {%endif%}
@@ -105,7 +105,7 @@ RUN apt-get update \
 FROM {{image}} as builder
 
 {% if localbuild == 1 %}
-RUN sed -i 's#http://archive.ubuntu.com/ubuntu/#mirror://mirrors.ubuntu.com/mirrors.txt#' /etc/apt/sources.list;
+# RUN sed -i 's#http://archive.ubuntu.com/ubuntu/#mirror://mirrors.ubuntu.com/mirrors.txt#' /etc/apt/sources.list;
 {% endif %}
 
 RUN apt-get update \

@@ -1,11 +1,11 @@
 .PHONY: build run
 
 # Default values for variables
-REPO  ?= dorowu/ubuntu-desktop-lxde-vnc
-TAG   ?= latest
+REPO  ?= vnc
+TAG   ?= gpu
 # you can choose other base image versions
 IMAGE ?= ubuntu:18.04
-LOCALBUILD ?= tw
+LOCALBUILD ?= cn
 HTTP_PASSWORD ?= 123456
 CUSTOM_USER ?= ubuntu
 PASSWORD ?= ubuntu
