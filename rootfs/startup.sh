@@ -24,7 +24,13 @@ USER=${USER:-root}
 HOME=/root
 if [ "$USER" != "root" ]; then
     echo "* enable custom user: $USER"
-    useradd --create-home --shell /bin/bash --user-group --groups adm,sudo $USER
+    if [ -z "$UID" ] || [ -z "$GID" ]; then
+        useradd --create-home --shell /bin/bash --user-group --groups $USER
+    else
+        groupadd --gid $GID $USER
+        useradd --create-home --shell /bin/bash --uid $UID --gid $GID $USER
+    fi
+
     if [ -z "$PASSWORD" ]; then
         echo "  set default password to \"ubuntu\""
         PASSWORD=ubuntu
@@ -71,5 +77,7 @@ fi
 # clearup
 PASSWORD=
 HTTP_PASSWORD=
+
+/etc/init.d/ssh start
 
 exec /bin/tini -- supervisord -n -c /etc/supervisor/supervisord.conf
